@@ -29,7 +29,21 @@ functions:
     events:
       - http:
           method: POST
-          path: /auction
+          path: /auctions
+
+  getAuctions:
+    handler: src/handlers/getAuctions.handler
+    events:
+      - http:
+          method: GET
+          path: /auctions
+
+  getAuction:
+    handler: src/handlers/getAuction.handler
+    events:
+      - http:
+          method: GET
+          path: /auctions/{id}
 
 # This is just a custom yaml object that we created for facilitate some things
 custom:

@@ -2,6 +2,8 @@ AuctionsTableIAM:
   Effect: Allow
   Action:
     - dynamodb:PutItem
+    - dynamodb:Scan
+    - dynamodb:GetItem
   Resource:
     # Old version:
     # - arn:aws:dynamodb:eu-west-1:658558064419:table/AuctionsTable

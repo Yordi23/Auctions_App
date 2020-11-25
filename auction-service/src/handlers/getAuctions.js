@@ -1,4 +1,3 @@
-import { v4 as uuid } from "uuid";
 import AWS from "aws-sdk";
 import middy from "@middy/core";
 import httpJsonBodyParser from "@middy/http-json-body-parser";
@@ -8,36 +7,29 @@ import createError from "http-errors";
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-async function createAuction(event, context) {
-  const { title } = event.body;
-  const dateNow = new Date();
-
-  const auction = {
-    id: uuid(),
-    title,
-    status: "OPEN",
-    createdAt: dateNow.toISOString(),
-  };
+async function getAuctions(event, context) {
+  let auctions;
 
   try {
-    await dynamoDB
-      .put({
+    const result = await dynamoDB
+      .scan({
         TableName: process.env.AUCTIONS_TABLE_NAME,
-        Item: auction,
       })
-      .promise();
+      .promise(); // We need to convert this to a promise in order to be able to use "await"
+
+    auctions = result.Items;
   } catch (error) {
     console.error(error);
-    throw new createError.InternalServerError(error);
+    throw new createError.InternalServerError(error); //In real world, its a bad practice to expose raw errors to clients
   }
 
   return {
-    statusCode: 201,
-    body: JSON.stringify(auction),
+    statusCode: 200,
+    body: JSON.stringify(auctions),
   };
 }
 
-export const handler = middy(createAuction)
+export const handler = middy(getAuctions)
   .use(httpJsonBodyParser())
   .use(httpEventNormalizer())
   .use(httpErrorHandler());
