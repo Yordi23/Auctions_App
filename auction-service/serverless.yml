@@ -45,6 +45,13 @@ functions:
           method: GET
           path: /auctions/{id}
 
+  placeBid:
+    handler: src/handlers/placeBid.handler
+    events:
+      - http:
+          method: PATCH
+          path: /auctions/{id}/bid
+
 # This is just a custom yaml object that we created for facilitate some things
 custom:
   AuctionsTable:
