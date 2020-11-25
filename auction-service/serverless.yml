@@ -11,30 +11,17 @@ provider:
   memorySize: 256
   stage: ${opt:stage, 'dev'}
   region: eu-west-1
+  environment:
+    AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+  # In here we add the necesary permision to allow our lambda function to interact our DynamoDB AuctionsTable
   iamRoleStatements:
-    # In here we add the necesary permision to allow our lambda function to interact our DynamoDB AuctionsTable
-    - Effect: Allow
-      Action:
-        - dynamodb:PutItem
-      Resource:
-        # - arn:aws:dynamodb:eu-west-1:658558064419:table/AuctionsTable  
-        # (this above can work, but its not flexible. So we use the serverless-pseudo-parameters plugin feature)
-        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
+    # Serverless framework allow us to import files, thats what we do in here
+    - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
 
-# Here we definde our DyanamoDB table, which will be created, if does not exits, during a deploy
+# Here we define our DynamoDB table, which will be created, if does not exits, during a deploy
 resources:
   Resources:
-    AuctionsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: AuctionsTable
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
+    AuctionsTable: ${file(resources/AuctionsTable.yml):AuctionsTable}
 
 functions:
   createAuction:
@@ -44,6 +31,10 @@ functions:
           method: POST
           path: /auction
 
-# custom:
-#   bundle:
-#     linting: false
+# This is just a custom yaml object that we created for facilitate some things
+custom:
+  AuctionsTable:
+    name: !Ref AuctionsTable
+    arn: !GetAtt AuctionsTable.Arn
+  # bundle:
+  #   linting: false

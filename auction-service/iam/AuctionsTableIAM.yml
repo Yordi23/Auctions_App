@@ -1,0 +1,11 @@
+AuctionsTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:PutItem
+  Resource:
+    # Old version:
+    # - arn:aws:dynamodb:eu-west-1:658558064419:table/AuctionsTable
+    # (this above can work, but its not flexible. So we use the serverless-pseudo-parameters plugin feature)
+    # - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
+    # New version:
+    - ${self:custom.AuctionsTable.arn}
