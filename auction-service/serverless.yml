@@ -61,8 +61,8 @@ functions:
 
   processAuctions:
     handler: src/handlers/processAuctions.handler
-    # events:
-    #   - schedule: rate(1 minute)
+    events:
+      - schedule: rate(1 minute)
 
 # This is just a custom yaml object that we created for facilitate some things
 custom:
