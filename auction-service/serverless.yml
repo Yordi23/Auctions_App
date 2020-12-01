@@ -13,10 +13,12 @@ provider:
   region: eu-west-1
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+    MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
   # In here we add the necesary permision to allow our lambda function to interact our DynamoDB AuctionsTable
   iamRoleStatements:
     # Serverless framework allow us to import files, thats what we do in here
     - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
+    - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
 
 # Here we define our DynamoDB table, which will be created, if does not exits, during a deploy
 resources:
@@ -64,10 +66,14 @@ functions:
 
 # This is just a custom yaml object that we created for facilitate some things
 custom:
-  # #{} is the sintax for using pseudo-parameters
+  # "#{}" is the sintax for using pseudo-parameters
   authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-auth
   AuctionsTable:
     name: !Ref AuctionsTable
     arn: !GetAtt AuctionsTable.Arn
+  MailQueue:
+    # Importing outputs from notification-service. cf = Cloud Formation
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
   # bundle:
   #   linting: false
