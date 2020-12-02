@@ -14,16 +14,20 @@ provider:
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
     MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
+    AUCTIONS_BUCKET_NAME: ${self:custom.AuctionsBucket.name}
   # In here we add the necesary permision to allow our lambda function to interact our DynamoDB AuctionsTable
   iamRoleStatements:
     # Serverless framework allow us to import files, thats what we do in here
     - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
     - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
+    - ${file(iam/AuctionsBucketIAM.yml):AuctionsBucketIAM}
 
 # Here we define our DynamoDB table, which will be created, if does not exits, during a deploy
 resources:
   Resources:
     AuctionsTable: ${file(resources/AuctionsTable.yml):AuctionsTable}
+    AuctionsBucket: ${file(resources/AuctionsBucket.yml):AuctionsBucket}
+    AuctionsBucketPolicy: ${file(resources/AuctionsBucket.yml):AuctionsBucketPolicy}
 
 functions:
   createAuction:
@@ -33,6 +37,14 @@ functions:
           method: POST
           path: /auctions
           # Here goes the ARN of the lambda function that handles authorization
+          authorizer: ${self:custom.authorizer}
+
+  uploadAuctionPicture:
+    handler: src/handlers/uploadAuctionPicture.handler
+    events:
+      - http:
+          method: PATCH
+          path: auction/{id}/picture
           authorizer: ${self:custom.authorizer}
 
   getAuctions:
@@ -75,5 +87,7 @@ custom:
     # Importing outputs from notification-service. cf = Cloud Formation
     arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
     url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
+  AuctionsBucket:
+    name: serverless-course-auctions-bucket-${self:provider.stage}
   # bundle:
   #   linting: false
