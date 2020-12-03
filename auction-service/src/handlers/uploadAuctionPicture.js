@@ -15,7 +15,7 @@ export async function uploadAuctionPicture(event) {
   const { email } = event.requestContext.authorizer;
   const auction = await getAuctionById(id);
 
-  if (email != +auction.seller) {
+  if (email != auction.seller) {
     throw new createError.Forbidden(
       "You are not allowed to update this auction"
     );
